@@ -18,7 +18,12 @@ export type VisualizerStyle =
   | 'quantum-waves'
   | 'starburst'
   | 'dual-spectrum'
-  | 'cyber-equalizer';
+  | 'cyber-equalizer'
+  | 'solar-flare'
+  | 'matrix-rain'
+  | 'plasma-pulse'
+  | 'supernova-ring'
+  | 'aurora-waves';
 
 export interface AudioState {
   isPlaying: boolean;

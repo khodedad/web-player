@@ -1,8 +1,7 @@
 /**
  * web play - Responsive Fullscreen Web Music Player & Visualizer
  * Fully responsive across Mobile, Tablet, Desktop, and 16:9 Smart TVs.
- * Optimized padding for edge-to-edge display without TV side clipping.
- * Maximized safe cover circle size and dedicated station popup modal with custom scrollbar.
+ * 11 stunning visualizer styles including 5 newly added high-end audiovisualizers.
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -22,6 +21,11 @@ const VISUALIZER_STYLES: { id: VisualizerStyle; name: string }[] = [
   { id: 'starburst', name: 'کهکشان پرتوهای نوری' },
   { id: 'dual-spectrum', name: 'طیف دوطرفه اینتنس' },
   { id: 'cyber-equalizer', name: 'اکولایزر سایبرپانک' },
+  { id: 'solar-flare', name: 'شعله خورشیدی (Solar Flare)' },
+  { id: 'matrix-rain', name: 'باران دیجیتال ماتریس' },
+  { id: 'plasma-pulse', name: 'پالس پلاسما (Plasma Pulse)' },
+  { id: 'supernova-ring', name: 'حلقه ابرنواختر (Supernova)' },
+  { id: 'aurora-waves', name: 'امواج شفق قطبی (Aurora)' },
 ];
 
 export default function App() {
@@ -92,7 +96,7 @@ export default function App() {
     }
   }, [audioState.isPlaying, currentTrack.url]);
 
-  // Tap on Central Circle cycles through 6 beautiful visualizer types
+  // Tap on Central Circle cycles through 11 beautiful visualizer types
   const handleCycleVisualizer = useCallback(() => {
     const currentIndex = VISUALIZER_STYLES.findIndex((s) => s.id === visualizerStyle);
     const nextIndex = (currentIndex + 1) % VISUALIZER_STYLES.length;

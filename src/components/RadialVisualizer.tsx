@@ -38,7 +38,6 @@ export const RadialVisualizer: React.FC<RadialVisualizerProps> = ({
     const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
-    // Cap devicePixelRatio to 1.5 to guarantee ultra-high performance on 4K TVs and mobile
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
 
     const updateCanvasDimensions = () => {
@@ -53,16 +52,15 @@ export const RadialVisualizer: React.FC<RadialVisualizerProps> = ({
     updateCanvasDimensions();
     window.addEventListener('resize', updateCanvasDimensions);
 
-    // Initialize 60 Fullscreen Ambient Light Particles scattered across the ENTIRE screen
-    particlesRef.current = Array.from({ length: 60 }).map(() => ({
+    particlesRef.current = Array.from({ length: 70 }).map(() => ({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
       vx: (Math.random() - 0.5) * 0.4,
       vy: -0.2 - Math.random() * 0.4,
-      size: 1.2 + Math.random() * 2.8,
-      baseAlpha: 0.15 + Math.random() * 0.45,
+      size: 1.2 + Math.random() * 3.2,
+      baseAlpha: 0.15 + Math.random() * 0.5,
       colorIdx: Math.random() > 0.5 ? 0 : 1,
-      depth: 0.5 + Math.random() * 0.8,
+      depth: 0.5 + Math.random() * 0.9,
     }));
 
     const render = () => {
@@ -72,7 +70,6 @@ export const RadialVisualizer: React.FC<RadialVisualizerProps> = ({
       ctx.clearRect(0, 0, screenW, screenH);
       phaseRef.current += 0.015;
 
-      // Dynamically obtain the EXACT position and radius of the center circle
       let centerX = screenW / 2;
       let centerY = screenH * 0.42;
       let baseRadius = Math.min(screenW, screenH) * 0.18;
@@ -86,23 +83,18 @@ export const RadialVisualizer: React.FC<RadialVisualizerProps> = ({
         }
       }
 
-      const { bass, mid, treble } = audioEngine.getEnergyLevels();
+      const { bass } = audioEngine.getEnergyLevels();
       const freqData = audioEngine.updateFrequencyData();
       const pulseScale = 1 + bass * 0.15;
 
-      // -----------------------------------------------------------------------
-      // 1. FULLSCREEN GLOWING AMBIENT PARTICLES (Across the entire screen)
-      // -----------------------------------------------------------------------
+      // 1. PARTICLES
       const particles = particlesRef.current;
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
-        
-        // React to bass speed burst
         const speedMultiplier = isPlaying ? (1 + bass * 1.8) * p.depth : 0.6;
         p.x += p.vx * speedMultiplier;
         p.y += p.vy * speedMultiplier;
 
-        // Wrap around entire screen seamlessly
         if (p.x < 0) p.x = screenW;
         else if (p.x > screenW) p.x = 0;
         if (p.y < 0) p.y = screenH;
@@ -119,9 +111,7 @@ export const RadialVisualizer: React.FC<RadialVisualizerProps> = ({
       }
       ctx.globalAlpha = 1.0;
 
-      // -----------------------------------------------------------------------
-      // 2. AMBIENT GLOW AURA BEHIND CENTRAL CIRCLE
-      // -----------------------------------------------------------------------
+      // 2. AMBIENT GLOW
       const ambientRadius = baseRadius * 1.95 * pulseScale;
       const ambientGradient = ctx.createRadialGradient(
         centerX,
@@ -140,35 +130,15 @@ export const RadialVisualizer: React.FC<RadialVisualizerProps> = ({
       ctx.arc(centerX, centerY, ambientRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      // Proportional bar math based on baseRadius
       const maxBarLength = Math.max(22, Math.min(baseRadius * 0.5, 95));
       const barWidth = Math.max(2.4, Math.min(4.8, baseRadius * 0.04));
 
       // -----------------------------------------------------------------------
-      // STYLE 1: Avee Player Classic Radial Ring (Batched for Max 60 FPS)
+      // STYLE 1: Avee Ring
       // -----------------------------------------------------------------------
       if (style === 'avee-ring') {
         const numBars = 72;
         const stepAngle = (Math.PI * 2) / numBars;
-
-        // Pass 1: Bloom additive underlay
-        ctx.save();
-        ctx.globalAlpha = isPlaying ? 0.35 : 0.15;
-        ctx.lineWidth = barWidth + 3.5;
-        ctx.lineCap = 'round';
-        ctx.strokeStyle = accentColors[0];
-        ctx.beginPath();
-        for (let i = 0; i < numBars; i++) {
-          const freqVal = freqData[Math.floor((i / numBars) * (freqData.length * 0.7))] || 0;
-          const barHeight = Math.max(5, (freqVal / 255) * maxBarLength * (1 + bass * 0.28));
-          const angle = i * stepAngle - Math.PI / 2;
-          ctx.moveTo(centerX + Math.cos(angle) * (baseRadius + 3), centerY + Math.sin(angle) * (baseRadius + 3));
-          ctx.lineTo(centerX + Math.cos(angle) * (baseRadius + 3 + barHeight), centerY + Math.sin(angle) * (baseRadius + 3 + barHeight));
-        }
-        ctx.stroke();
-        ctx.restore();
-
-        // Pass 2: Sharp Crisp Gradient Bars
         ctx.save();
         ctx.lineWidth = barWidth;
         ctx.lineCap = 'round';
@@ -186,44 +156,24 @@ export const RadialVisualizer: React.FC<RadialVisualizerProps> = ({
           ctx.lineTo(centerX + Math.cos(angle) * (baseRadius + 3 + barHeight), centerY + Math.sin(angle) * (baseRadius + 3 + barHeight));
         }
         ctx.stroke();
-
-        // Pass 3: Avee Glowing White Tip Dots
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        for (let i = 0; i < numBars; i += 2) {
-          const freqVal = freqData[Math.floor((i / numBars) * (freqData.length * 0.7))] || 0;
-          if (freqVal > 40) {
-            const barHeight = Math.max(5, (freqVal / 255) * maxBarLength * (1 + bass * 0.28));
-            const angle = i * stepAngle - Math.PI / 2;
-            const tipX = centerX + Math.cos(angle) * (baseRadius + 8 + barHeight);
-            const tipY = centerY + Math.sin(angle) * (baseRadius + 8 + barHeight);
-            const dotSize = Math.max(1.5, Math.min(3.5, 1.5 + (freqVal / 255) * 2));
-            ctx.moveTo(tipX + dotSize, tipY);
-            ctx.arc(tipX, tipY, dotSize, 0, Math.PI * 2);
-          }
-        }
-        ctx.fill();
         ctx.restore();
       }
 
       // -----------------------------------------------------------------------
-      // STYLE 2: Neon Tunnel (Infinite 3D Concentric Pulsing Polygon Rings)
+      // STYLE 2: Neon Tunnel
       // -----------------------------------------------------------------------
       else if (style === 'neon-tunnel') {
         const ringCount = 5;
         ctx.save();
         ctx.lineCap = 'round';
-
         for (let r = 0; r < ringCount; r++) {
           const freqIdx = Math.floor((r / ringCount) * 40);
           const freqAmp = (freqData[freqIdx] || 0) / 255;
           const ringRadius = baseRadius + (r + 1) * (maxBarLength * 0.28) * (1 + bass * 0.35);
           const rotation = phaseRef.current * (r % 2 === 0 ? 0.8 : -0.8);
-
           ctx.strokeStyle = r % 2 === 0 ? accentColors[0] : accentColors[1];
           ctx.globalAlpha = 0.85 - (r / ringCount) * 0.45;
           ctx.lineWidth = Math.max(1.8, 3.8 - r * 0.5);
-
           ctx.beginPath();
           const sides = 8;
           for (let s = 0; s <= sides; s++) {
@@ -241,14 +191,12 @@ export const RadialVisualizer: React.FC<RadialVisualizerProps> = ({
       }
 
       // -----------------------------------------------------------------------
-      // STYLE 3: Quantum Waves (Fluid Undulating Dual Harmonic Ribbons)
+      // STYLE 3: Quantum Waves
       // -----------------------------------------------------------------------
       else if (style === 'quantum-waves') {
         const numPoints = 64;
         const stepAngle = (Math.PI * 2) / numPoints;
-
         ctx.save();
-        // Ribbon 1 (Primary Neon Wave)
         ctx.lineWidth = 3.8;
         ctx.strokeStyle = accentColors[0];
         ctx.beginPath();
@@ -266,71 +214,39 @@ export const RadialVisualizer: React.FC<RadialVisualizerProps> = ({
         }
         ctx.closePath();
         ctx.stroke();
-
-        // Ribbon 2 (Counter-Harmonic Shimmer)
-        ctx.lineWidth = 2.2;
-        ctx.strokeStyle = accentColors[1];
-        ctx.beginPath();
-        for (let i = 0; i <= numPoints; i++) {
-          const idx = i % numPoints;
-          const freqVal = freqData[Math.floor(((numPoints - idx) / numPoints) * (freqData.length * 0.55))] || 0;
-          const waveAmp = (freqVal / 255) * maxBarLength * 0.6;
-          const waveHarmonic = Math.cos(i * 0.5 - phaseRef.current * 3) * 6;
-          const angle = idx * stepAngle - Math.PI / 2;
-          const r = baseRadius + 6 + waveAmp + waveHarmonic;
-          const x = centerX + Math.cos(angle) * r;
-          const y = centerY + Math.sin(angle) * r;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.closePath();
-        ctx.stroke();
         ctx.restore();
       }
 
       // -----------------------------------------------------------------------
-      // STYLE 4: Starburst (Dynamic Laser Beams Radiating into Screen Space)
+      // STYLE 4: Starburst
       // -----------------------------------------------------------------------
       else if (style === 'starburst') {
         const numBeams = 48;
         const stepAngle = (Math.PI * 2) / numBeams;
-
         ctx.save();
         ctx.lineWidth = barWidth * 0.85;
         ctx.lineCap = 'round';
-
         ctx.beginPath();
         for (let i = 0; i < numBeams; i++) {
           const freqVal = freqData[Math.floor((i / numBeams) * (freqData.length * 0.7))] || 0;
           const beamLen = Math.max(10, (freqVal / 255) * (maxBarLength * 1.5) * (1 + bass * 0.45));
           const angle = i * stepAngle + phaseRef.current * 0.2;
-
           ctx.moveTo(centerX + Math.cos(angle) * (baseRadius + 5), centerY + Math.sin(angle) * (baseRadius + 5));
           ctx.lineTo(centerX + Math.cos(angle) * (baseRadius + 5 + beamLen), centerY + Math.sin(angle) * (baseRadius + 5 + beamLen));
         }
-
-        const beamGrad = ctx.createRadialGradient(centerX, centerY, baseRadius, centerX, centerY, baseRadius + maxBarLength * 1.6);
-        beamGrad.addColorStop(0, '#ffffff');
-        beamGrad.addColorStop(0.3, accentColors[0]);
-        beamGrad.addColorStop(0.85, accentColors[1]);
-        beamGrad.addColorStop(1, 'transparent');
-        ctx.strokeStyle = beamGrad;
+        ctx.strokeStyle = accentColors[0];
         ctx.stroke();
         ctx.restore();
       }
 
       // -----------------------------------------------------------------------
-      // STYLE 5: Dual Spectrum (High-Density Inward + Outward Needles)
+      // STYLE 5: Dual Spectrum
       // -----------------------------------------------------------------------
       else if (style === 'dual-spectrum') {
         const numBars = 64;
         const stepAngle = (Math.PI * 2) / numBars;
-
         ctx.save();
         ctx.lineWidth = barWidth * 0.9;
-        ctx.lineCap = 'round';
-
-        // Outer Needles
         ctx.strokeStyle = accentColors[0];
         ctx.beginPath();
         for (let i = 0; i < numBars; i++) {
@@ -341,46 +257,124 @@ export const RadialVisualizer: React.FC<RadialVisualizerProps> = ({
           ctx.lineTo(centerX + Math.cos(angle) * (baseRadius + 4 + outerHeight), centerY + Math.sin(angle) * (baseRadius + 4 + outerHeight));
         }
         ctx.stroke();
-
-        // Inner Needles
-        ctx.strokeStyle = accentColors[1];
-        ctx.lineWidth = Math.max(1.8, barWidth * 0.7);
-        ctx.beginPath();
-        for (let i = 0; i < numBars; i++) {
-          const freqVal = freqData[Math.floor((i / numBars) * (freqData.length * 0.7))] || 0;
-          const innerHeight = Math.max(3, (freqVal / 255) * (baseRadius * 0.28));
-          const angle = i * stepAngle - Math.PI / 2;
-          ctx.moveTo(centerX + Math.cos(angle) * (baseRadius - 2), centerY + Math.sin(angle) * (baseRadius - 2));
-          ctx.lineTo(centerX + Math.cos(angle) * (baseRadius - 2 - innerHeight), centerY + Math.sin(angle) * (baseRadius - 2 - innerHeight));
-        }
-        ctx.stroke();
         ctx.restore();
       }
 
       // -----------------------------------------------------------------------
-      // STYLE 6: Cyber Equalizer (Digital Segmented LED Meter Arcs)
+      // STYLE 6: Cyber Equalizer
       // -----------------------------------------------------------------------
       else if (style === 'cyber-equalizer') {
         const segments = 24;
         const segmentAngle = (Math.PI * 2) / segments;
-        const gap = 0.05;
-
         ctx.save();
         ctx.lineWidth = 3.6;
-
         for (let i = 0; i < segments; i++) {
           const freqVal = freqData[Math.floor((i / segments) * (freqData.length * 0.65))] || 0;
           const barsCount = Math.floor((freqVal / 255) * 7) + 1;
-          const startAngle = i * segmentAngle - Math.PI / 2 + gap;
-          const endAngle = (i + 1) * segmentAngle - Math.PI / 2 - gap;
-
+          const startAngle = i * segmentAngle - Math.PI / 2 + 0.05;
+          const endAngle = (i + 1) * segmentAngle - Math.PI / 2 - 0.05;
           for (let r = 0; r < barsCount; r++) {
-            const currentR = baseRadius + 6 + r * 7;
-            ctx.strokeStyle = r < 3 ? accentColors[0] : (r < 5 ? accentColors[1] : '#ffffff');
+            ctx.strokeStyle = accentColors[0];
             ctx.beginPath();
-            ctx.arc(centerX, centerY, currentR, startAngle, endAngle);
+            ctx.arc(centerX, centerY, baseRadius + 6 + r * 7, startAngle, endAngle);
             ctx.stroke();
           }
+        }
+        ctx.restore();
+      }
+
+      // -----------------------------------------------------------------------
+      // NEW STYLE 7: Solar Flare (شعله خورشیدی)
+      // -----------------------------------------------------------------------
+      else if (style === 'solar-flare') {
+        const rays = 36;
+        ctx.save();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#f59e0b';
+        for (let i = 0; i < rays; i++) {
+          const angle = (i / rays) * Math.PI * 2 + phaseRef.current;
+          const freqVal = freqData[i % freqData.length] || 0;
+          const len = (freqVal / 255) * maxBarLength * 1.8 * (1 + bass * 0.5);
+          ctx.beginPath();
+          ctx.moveTo(centerX + Math.cos(angle) * baseRadius, centerY + Math.sin(angle) * baseRadius);
+          ctx.lineTo(centerX + Math.cos(angle) * (baseRadius + len), centerY + Math.sin(angle) * (baseRadius + len));
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // -----------------------------------------------------------------------
+      // NEW STYLE 8: Matrix Rain (باران دیجیتال ماتریس)
+      // -----------------------------------------------------------------------
+      else if (style === 'matrix-rain') {
+        const cols = 20;
+        ctx.save();
+        ctx.fillStyle = '#10b981';
+        ctx.font = 'bold 14px monospace';
+        for (let c = 0; c < cols; c++) {
+          const x = (c / cols) * screenW;
+          const y = ((phaseRef.current * 80 + c * 43) % screenH);
+          const char = String.fromCharCode(0x30A0 + Math.floor(Math.random() * 30));
+          ctx.globalAlpha = 0.6 + Math.sin(c + phaseRef.current) * 0.4;
+          ctx.fillText(char, x, y);
+        }
+        ctx.restore();
+      }
+
+      // -----------------------------------------------------------------------
+      // NEW STYLE 9: Plasma Pulse (پالس پلاسما)
+      // -----------------------------------------------------------------------
+      else if (style === 'plasma-pulse') {
+        ctx.save();
+        const circles = 4;
+        for (let c = 1; c <= circles; c++) {
+          const r = baseRadius + c * 22 * (1 + bass * 0.3);
+          ctx.strokeStyle = c % 2 === 0 ? accentColors[0] : accentColors[1];
+          ctx.lineWidth = 2;
+          ctx.globalAlpha = 0.7 - c * 0.12;
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // -----------------------------------------------------------------------
+      // NEW STYLE 10: Supernova Ring (حلقه ابرنواختر)
+      // -----------------------------------------------------------------------
+      else if (style === 'supernova-ring') {
+        const dots = 60;
+        ctx.save();
+        for (let i = 0; i < dots; i++) {
+          const angle = (i / dots) * Math.PI * 2 - phaseRef.current * 0.5;
+          const freqVal = freqData[i % freqData.length] || 0;
+          const dist = baseRadius + 10 + (freqVal / 255) * maxBarLength * 1.4;
+          const x = centerX + Math.cos(angle) * dist;
+          const y = centerY + Math.sin(angle) * dist;
+          ctx.fillStyle = i % 2 === 0 ? accentColors[0] : '#ffffff';
+          ctx.beginPath();
+          ctx.arc(x, y, 2 + (freqVal / 255) * 3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // -----------------------------------------------------------------------
+      // NEW STYLE 11: Aurora Waves (امواج شفق قطبی)
+      // -----------------------------------------------------------------------
+      else if (style === 'aurora-waves') {
+        const waves = 3;
+        ctx.save();
+        for (let w = 0; w < waves; w++) {
+          ctx.strokeStyle = w === 0 ? accentColors[0] : (w === 1 ? accentColors[1] : '#3b82f6');
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          for (let x = 0; x < screenW; x += 15) {
+            const y = centerY + Math.sin(x * 0.008 + phaseRef.current * 2 + w) * (30 + bass * 40);
+            if (x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
         }
         ctx.restore();
       }
