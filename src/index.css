@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    font-family: 'Vazirmatn', 'Outfit', system-ui, -apple-system, sans-serif;
+  }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden !important;
+    position: fixed;
+    touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
+    background-color: #030712;
+    color: #f8fafc;
+  }
+
+  /* Hide all scrollbars on TV engines */
+  ::-webkit-scrollbar {
+    display: none;
+    width: 0px;
+    height: 0px;
+  }
+}
+
+.tv-focusable {
+  outline: none;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.tv-focusable:focus {
+  outline: none;
+}
+
+/* TV Remote spatial navigation focus indicator (only active when using remote D-pad) */
+.tv-focusable.tv-focused {
+  outline: none;
+  transform: scale(1.06);
+  box-shadow: 0 0 0 3px #ec4899;
+  border-color: #ec4899 !important;
+}
+

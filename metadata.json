@@ -1,0 +1,6 @@
+{
+  "name": "web play",
+  "description": "ویژوالایزر و موزیکپلیر تمام‌صفحه و تحت وب مخصوص تلویزیون با Web Audio API و کنترل ریموت",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
