@@ -1,9 +1,8 @@
 /**
  * web play - Responsive Fullscreen Web Music Player & Visualizer
  * Fully responsive across Mobile, Tablet, Desktop, and 16:9 Smart TVs.
- * Zoom-invariant proportions using vmin math and 6 distinct fullscreen particle visualizers.
- * Station list moved to a gorgeous modal popup triggered from the bottom-left button (opposite mute button).
- * Larger cover circle and lower controls layout.
+ * Optimized padding for edge-to-edge display without TV side clipping.
+ * Maximized safe cover circle size and dedicated station popup modal with custom scrollbar.
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -231,10 +230,10 @@ export default function App() {
   return (
     <div 
       style={{
-        paddingTop: 'clamp(8px, 2vmin, 20px)',
-        paddingBottom: 'clamp(8px, 2vmin, 20px)',
-        paddingLeft: 'clamp(8px, 2vmin, 24px)',
-        paddingRight: 'clamp(8px, 2vmin, 24px)',
+        paddingTop: 'clamp(4px, 1vmin, 10px)',
+        paddingBottom: 'clamp(6px, 1.2vmin, 14px)',
+        paddingLeft: 'clamp(4px, 1vmin, 12px)',
+        paddingRight: 'clamp(4px, 1vmin, 12px)',
       }}
       className="fixed inset-0 w-screen h-screen overflow-hidden bg-[#030712] text-slate-100 flex flex-col justify-between items-center select-none"
     >
@@ -266,7 +265,7 @@ export default function App() {
       {styleToast && (
         <div 
           style={{
-            top: 'clamp(12px, 2.5vmin, 28px)',
+            top: 'clamp(10px, 2vmin, 24px)',
             fontSize: 'clamp(0.72rem, 1.4vmin, 0.95rem)',
             padding: 'clamp(4px, 0.8vmin, 8px) clamp(12px, 2.2vmin, 22px)',
           }}
@@ -280,11 +279,11 @@ export default function App() {
       <div
         className="absolute inset-0 pointer-events-none opacity-25 transition-opacity duration-1000"
         style={{
-          background: `radial-gradient(circle at 50% 45%, ${colors[0]}33 0%, ${colors[1]}15 50%, #030712 100%)`,
+          background: `radial-gradient(circle at 50% 42%, ${colors[0]}33 0%, ${colors[1]}15 50%, #030712 100%)`,
         }}
       />
 
-      {/* Fullscreen Web Audio Radial Canvas Visualizer - Full screen background */}
+      {/* Fullscreen Web Audio Radial Canvas Visualizer */}
       <RadialVisualizer
         style={visualizerStyle}
         isPlaying={audioState.isPlaying}
@@ -292,8 +291,8 @@ export default function App() {
         circleRef={circleRef}
       />
 
-      {/* 1. UPPER STAGE: Larger CoverCircle for maximized visual impact */}
-      <div className="relative z-20 flex-[1.4] flex items-center justify-center w-full pt-2">
+      {/* 1. UPPER STAGE: Maximized CoverCircle */}
+      <div className="relative z-20 flex-[1.6] flex items-center justify-center w-full pt-1">
         <CoverCircle
           ref={circleRef}
           currentTrack={currentTrack}
@@ -304,8 +303,8 @@ export default function App() {
         />
       </div>
 
-      {/* 2. LOWER STAGE: Title, Seekbar, Transport Controls, and Station Modal Button */}
-      <main className="relative z-20 flex-[0.8] flex flex-col items-center justify-end w-full pb-6">
+      {/* 2. LOWER STAGE: Controls tucked cleanly at the bottom */}
+      <main className="relative z-20 flex-[0.7] flex flex-col items-center justify-end w-full pb-1">
         <TvControls
           currentTrack={currentTrack}
           isPlaying={audioState.isPlaying}
@@ -323,7 +322,7 @@ export default function App() {
         />
       </main>
 
-      {/* 3. Station Selection Modal Popup */}
+      {/* 3. Station Selection Modal Popup with Dedicated ScrollView */}
       <StationModal
         isOpen={isStationModalOpen}
         tracks={tracks}

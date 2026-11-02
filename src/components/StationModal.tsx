@@ -1,6 +1,6 @@
 import React from 'react';
 import { Track } from '../types/player';
-import { Radio, X, Check } from 'lucide-react';
+import { Radio, X } from 'lucide-react';
 
 interface StationModalProps {
   isOpen: boolean;
@@ -22,15 +22,15 @@ export const StationModal: React.FC<StationModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md select-none animate-fadeIn">
-      <div className="relative w-full max-w-md bg-slate-900 border border-slate-700/80 rounded-3xl p-6 shadow-2xl flex flex-col max-h-[85vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md select-none animate-fadeIn">
+      <div className="relative w-full max-w-md bg-slate-900 border border-slate-700/80 rounded-3xl p-5 shadow-2xl flex flex-col max-h-[85vh]">
         {/* Modal Header */}
-        <div className="flex items-center justify-between pb-4 mb-3 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-3 mb-2 border-b border-slate-800 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="p-2 rounded-xl bg-pink-500/20 text-pink-400">
               <Radio className="w-5 h-5" />
             </div>
-            <h2 className="text-lg font-bold text-white tracking-tight">انتخاب ایستگاه و استریم</h2>
+            <h2 className="text-base sm:text-lg font-bold text-white tracking-tight">انتخاب ایستگاه و استریم</h2>
           </div>
           <button
             onClick={onClose}
@@ -40,8 +40,8 @@ export const StationModal: React.FC<StationModalProps> = ({
           </button>
         </div>
 
-        {/* Station List */}
-        <div className="flex flex-col gap-2.5 overflow-y-auto pr-1 no-scrollbar">
+        {/* Dedicated Scrollable Station List Container */}
+        <div className="flex flex-col gap-2.5 overflow-y-auto pr-1 py-1 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
           {tracks.map((track) => {
             const isActive = track.id === currentTrackId;
 
@@ -52,7 +52,7 @@ export const StationModal: React.FC<StationModalProps> = ({
                   onSelectTrack(track);
                   onClose();
                 }}
-                className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border ${
+                className={`w-full flex items-center justify-between p-3.5 rounded-2xl transition-all border shrink-0 ${
                   isActive
                     ? 'bg-slate-800 border-pink-500/60 text-white shadow-lg'
                     : 'bg-slate-950/60 border-slate-800/70 text-slate-300 hover:bg-slate-800/60 hover:text-white'

@@ -51,7 +51,7 @@ export const TvControls: React.FC<TvControlsProps> = ({
   };
 
   return (
-    <div className="w-full max-w-md sm:max-w-lg px-4 flex flex-col items-center gap-2.5 sm:gap-3.5 z-20 select-none">
+    <div className="w-full max-w-xl px-2 sm:px-4 flex flex-col items-center gap-2 sm:gap-3 z-20 select-none">
       {/* 1. Track Info */}
       <div className="text-center w-full flex flex-col items-center">
         <h1 className="text-sm sm:text-lg md:text-xl font-bold text-white tracking-tight drop-shadow-sm truncate max-w-full">
@@ -139,7 +139,7 @@ export const TvControls: React.FC<TvControlsProps> = ({
           onClick={onToggleMute}
           tabIndex={0}
           title="صدا / سکوت"
-          className={`tv-focusable absolute right-0 sm:right-2 p-2.5 sm:p-3 rounded-full bg-slate-900/70 border border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800 transition-all ${
+          className={`tv-focusable absolute right-1 sm:right-3 p-2.5 sm:p-3 rounded-full bg-slate-900/70 border border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800 transition-all ${
             focusedElement === 'btn-volume' ? 'tv-focused' : ''
           }`}
         >
@@ -150,12 +150,12 @@ export const TvControls: React.FC<TvControlsProps> = ({
           )}
         </button>
 
-        {/* Station Modal Trigger Button (Symmetrically placed on the left side, opposite to mute button) */}
+        {/* Station Modal Trigger Button (Left side) */}
         <button
           onClick={onOpenStationModal}
           tabIndex={0}
           title="لیست ایستگاه‌ها و استریم‌ها"
-          className={`tv-focusable absolute left-0 sm:left-2 p-2.5 sm:p-3 rounded-full bg-slate-900/70 border border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800 transition-all ${
+          className={`tv-focusable absolute left-1 sm:left-3 p-2.5 sm:p-3 rounded-full bg-slate-900/70 border border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800 transition-all ${
             focusedElement === 'btn-stations' ? 'tv-focused' : ''
           }`}
         >
