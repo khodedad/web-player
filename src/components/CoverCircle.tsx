@@ -18,7 +18,13 @@ export const CoverCircle = forwardRef<HTMLDivElement, CoverCircleProps>(({
   onClick,
 }, ref) => {
   const [imgError, setImgError] = useState(false);
-  const hasCover = currentTrack.coverUrl && !imgError;
+  
+  // Route external cover URLs through backend proxy to bypass TV CORS, SSL, and Mixed Content blocks
+  const proxiedCoverUrl = currentTrack.coverUrl 
+    ? `/api/image-proxy?url=${encodeURIComponent(currentTrack.coverUrl)}`
+    : undefined;
+
+  const hasCover = proxiedCoverUrl && !imgError;
 
   return (
     <div
@@ -48,7 +54,7 @@ export const CoverCircle = forwardRef<HTMLDivElement, CoverCircleProps>(({
         {hasCover ? (
           <div className="relative w-full h-full">
             <img
-              src={currentTrack.coverUrl}
+              src={proxiedCoverUrl}
               alt={currentTrack.title}
               onError={() => setImgError(true)}
               className={`w-full h-full object-cover rounded-full transition-transform duration-700 ${

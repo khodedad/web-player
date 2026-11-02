@@ -1,5 +1,6 @@
 import express from 'express';
 import https from 'https';
+import http from 'http';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { createServer as createViteServer } from 'vite';
@@ -46,6 +47,37 @@ async function startServer() {
 
     req.on('close', () => {
       clientReq.destroy();
+    });
+  });
+
+  // Proxy endpoint for external images (Unsplash covers) to bypass TV CORS / Mixed Content restrictions
+  app.get('/api/image-proxy', (req, res) => {
+    const imageUrl = req.query.url as string;
+    if (!imageUrl) {
+      res.status(400).send('Missing image url');
+      return;
+    }
+
+    const clientLib = imageUrl.startsWith('https') ? https : http;
+    const proxyReq = clientLib.get(imageUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (SmartTV; Linux; Tizen 6.0) AppleWebKit/537.36',
+        'Accept': 'image/*',
+      },
+    }, (proxyRes) => {
+      res.writeHead(proxyRes.statusCode || 200, {
+        'Content-Type': proxyRes.headers['content-type'] || 'image/jpeg',
+        'Access-Control-Allow-Origin': '*',
+        'Cache-Control': 'public, max-age=86400',
+      });
+      proxyRes.pipe(res);
+    });
+
+    proxyReq.on('error', (err) => {
+      console.warn('Image proxy error:', err.message);
+      if (!res.headersSent) {
+        res.status(502).send('Image unavailable');
+      }
     });
   });
 
