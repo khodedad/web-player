@@ -3,9 +3,10 @@
 @layer base {
   :root {
     font-family: 'Vazirmatn', 'Outfit', system-ui, -apple-system, sans-serif;
-    -webkit-text-size-adjust: 100%;
-    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100% !important;
+    text-size-adjust: 100% !important;
     touch-action: none;
+    zoom: 1 !important;
   }
 
   html, body {
@@ -24,6 +25,7 @@
     -webkit-user-select: none;
     user-select: none;
     box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
   }
 
   /* Completely hide all scrollbars across TV Chromium and mobile */

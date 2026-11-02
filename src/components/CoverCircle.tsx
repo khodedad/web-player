@@ -26,8 +26,8 @@ export const CoverCircle = forwardRef<HTMLDivElement, CoverCircleProps>(({
       onClick={onClick}
       title="ضربه بزنید تا نوع ویژوالایزر تغییر کند"
       style={{
-        width: 'clamp(130px, 31vmin, 300px)',
-        height: 'clamp(130px, 31vmin, 300px)',
+        width: '180px',
+        height: '180px',
       }}
       className={`relative rounded-full cursor-pointer transition-transform duration-300 transform select-none flex items-center justify-center shrink-0 active:scale-95 ${
         isFocused ? 'ring-4 ring-pink-500 scale-105' : ''
@@ -84,7 +84,7 @@ export const CoverCircle = forwardRef<HTMLDivElement, CoverCircleProps>(({
 
         {/* Center Vinyl Spindle Hole */}
         <div 
-          style={{ width: 'clamp(24px, 4.5vmin, 44px)', height: 'clamp(24px, 4.5vmin, 44px)' }}
+          style={{ width: '32px', height: '32px' }}
           className="absolute rounded-full bg-slate-950 border border-slate-700/80 shadow-inner flex items-center justify-center z-20"
         >
           <Disc className="w-3.5 h-3.5 text-slate-400" />
