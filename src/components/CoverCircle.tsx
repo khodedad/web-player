@@ -25,11 +25,7 @@ export const CoverCircle = forwardRef<HTMLDivElement, CoverCircleProps>(({
       ref={ref}
       onClick={onClick}
       title="ضربه بزنید تا نوع ویژوالایزر تغییر کند"
-      style={{
-        width: '180px',
-        height: '180px',
-      }}
-      className={`relative rounded-full cursor-pointer transition-transform duration-300 transform select-none flex items-center justify-center shrink-0 active:scale-95 ${
+      className={`relative rounded-full cursor-pointer transition-transform duration-300 transform select-none flex items-center justify-center shrink-0 active:scale-95 w-[clamp(140px,26vh,260px)] h-[clamp(140px,26vh,260px)] sm:w-[clamp(160px,30vmin,300px)] sm:h-[clamp(160px,30vmin,300px)] ${
         isFocused ? 'ring-4 ring-pink-500 scale-105' : ''
       }`}
     >
@@ -71,23 +67,20 @@ export const CoverCircle = forwardRef<HTMLDivElement, CoverCircleProps>(({
             }}
           >
             <div className="z-10 p-2.5 rounded-full bg-black/25 backdrop-blur-sm mb-1 shadow-inner border border-white/10">
-              <Music className="w-6 h-6 text-white" />
+              <Music className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
             </div>
-            <div className="z-10 text-white font-bold text-xs max-w-[85%] truncate drop-shadow-sm">
+            <div className="z-10 text-white font-bold text-xs sm:text-sm max-w-[85%] truncate drop-shadow-sm">
               {currentTrack.title}
             </div>
-            <div className="z-10 text-white/80 text-[10px] truncate max-w-[85%]">
+            <div className="z-10 text-white/80 text-[10px] sm:text-xs truncate max-w-[85%]">
               {currentTrack.artist}
             </div>
           </div>
         )}
 
         {/* Center Vinyl Spindle Hole */}
-        <div 
-          style={{ width: '32px', height: '32px' }}
-          className="absolute rounded-full bg-slate-950 border border-slate-700/80 shadow-inner flex items-center justify-center z-20"
-        >
-          <Disc className="w-3.5 h-3.5 text-slate-400" />
+        <div className="absolute w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-slate-950 border border-slate-700/80 shadow-inner flex items-center justify-center z-20">
+          <Disc className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-400" />
         </div>
       </div>
     </div>

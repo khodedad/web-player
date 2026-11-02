@@ -49,25 +49,13 @@ export const TvControls: React.FC<TvControlsProps> = ({
   };
 
   return (
-    <div 
-      style={{
-        width: '440px',
-        gap: '12px',
-      }}
-      className="flex flex-col items-center z-20 select-none px-2"
-    >
+    <div className="w-full max-w-md sm:max-w-lg px-4 flex flex-col items-center gap-2.5 sm:gap-3.5 z-20 select-none">
       {/* 1. Track Info */}
       <div className="text-center w-full flex flex-col items-center">
-        <h1 
-          style={{ fontSize: '1.25rem' }}
-          className="font-bold text-white tracking-tight drop-shadow-sm truncate max-w-full leading-tight"
-        >
+        <h1 className="text-sm sm:text-lg md:text-xl font-bold text-white tracking-tight drop-shadow-sm truncate max-w-full">
           {currentTrack.title}
         </h1>
-        <p 
-          style={{ fontSize: '0.875rem' }}
-          className="text-slate-400 font-medium truncate max-w-[85%] mt-0.5 leading-normal"
-        >
+        <p className="text-xs sm:text-sm text-slate-400 font-medium truncate max-w-[85%] mt-0.5">
           {currentTrack.artist}
         </p>
       </div>
@@ -78,8 +66,7 @@ export const TvControls: React.FC<TvControlsProps> = ({
           <div
             onClick={handleSeekBarClick}
             tabIndex={0}
-            style={{ height: '8px' }}
-            className={`tv-focusable w-full bg-slate-800/80 rounded-full overflow-hidden cursor-pointer relative border border-slate-700/50 ${
+            className={`tv-focusable w-full h-2 sm:h-2.5 bg-slate-800/80 rounded-full overflow-hidden cursor-pointer relative border border-slate-700/50 ${
               focusedElement === 'seekbar' ? 'tv-focused' : ''
             }`}
           >
@@ -89,19 +76,13 @@ export const TvControls: React.FC<TvControlsProps> = ({
             />
           </div>
         ) : (
-          <div 
-            style={{ height: '7px' }}
-            className="w-full bg-slate-800/50 rounded-full overflow-hidden relative"
-          >
+          <div className="w-full h-1.5 sm:h-2 bg-slate-800/50 rounded-full overflow-hidden relative">
             <div className="h-full w-full bg-gradient-to-r from-pink-500/40 via-purple-500/60 to-pink-500/40 animate-pulse" />
           </div>
         )}
 
         {/* Timers */}
-        <div 
-          style={{ fontSize: '0.75rem' }}
-          className="flex justify-between items-center font-mono font-medium text-slate-500 px-0.5"
-        >
+        <div className="flex justify-between items-center text-[10px] sm:text-xs font-mono font-medium text-slate-500 px-0.5">
           <span>{isLive ? 'پخش زنده' : formatTime(currentTime)}</span>
           <span>{isLive ? 'رادیو ۲۴/۷' : formatTime(duration)}</span>
         </div>
@@ -109,21 +90,17 @@ export const TvControls: React.FC<TvControlsProps> = ({
 
       {/* 3. Media Controls Cluster */}
       <div className="relative w-full flex items-center justify-center my-0.5">
-        <div 
-          style={{ gap: '20px' }}
-          className="flex items-center justify-center"
-        >
+        <div className="flex items-center justify-center gap-4 sm:gap-6">
           {/* Next Button */}
           <button
             onClick={onNext}
             tabIndex={0}
             title="بعدی (Arrow Right)"
-            style={{ width: '48px', height: '48px' }}
-            className={`tv-focusable rounded-full bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition-all shadow-md flex items-center justify-center ${
+            className={`tv-focusable p-2.5 sm:p-3.5 rounded-full bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition-all shadow-md ${
               focusedElement === 'btn-next' ? 'tv-focused' : ''
             }`}
           >
-            <SkipForward className="w-5 h-5 fill-current" />
+            <SkipForward className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
           </button>
 
           {/* Center Play / Pause Button */}
@@ -131,15 +108,14 @@ export const TvControls: React.FC<TvControlsProps> = ({
             onClick={onPlayPause}
             tabIndex={0}
             title="پخش/توقف (Enter / Space)"
-            style={{ width: '64px', height: '64px' }}
-            className={`tv-focusable rounded-full bg-gradient-to-tr from-pink-600 to-purple-600 text-white shadow-lg hover:scale-105 active:scale-95 transition-all border border-pink-400/30 flex items-center justify-center ${
+            className={`tv-focusable p-3.5 sm:p-5 rounded-full bg-gradient-to-tr from-pink-600 to-purple-600 text-white shadow-lg hover:scale-105 active:scale-95 transition-all border border-pink-400/30 ${
               focusedElement === 'btn-play' ? 'tv-focused' : ''
             }`}
           >
             {isPlaying ? (
-              <Pause className="w-7 h-7 fill-current" />
+              <Pause className="w-6 h-6 sm:w-8 sm:h-8 fill-current" />
             ) : (
-              <Play className="w-7 h-7 fill-current translate-x-0.5" />
+              <Play className="w-6 h-6 sm:w-8 sm:h-8 fill-current translate-x-0.5" />
             )}
           </button>
 
@@ -148,12 +124,11 @@ export const TvControls: React.FC<TvControlsProps> = ({
             onClick={onPrev}
             tabIndex={0}
             title="قبلی (Arrow Left)"
-            style={{ width: '48px', height: '48px' }}
-            className={`tv-focusable rounded-full bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition-all shadow-md flex items-center justify-center ${
+            className={`tv-focusable p-2.5 sm:p-3.5 rounded-full bg-slate-900/90 border border-slate-800 text-slate-300 hover:text-white hover:bg-slate-800 active:scale-95 transition-all shadow-md ${
               focusedElement === 'btn-prev' ? 'tv-focused' : ''
             }`}
           >
-            <SkipBack className="w-5 h-5 fill-current" />
+            <SkipBack className="w-4 h-4 sm:w-5 sm:h-5 fill-current" />
           </button>
         </div>
 
@@ -162,8 +137,7 @@ export const TvControls: React.FC<TvControlsProps> = ({
           onClick={onToggleMute}
           tabIndex={0}
           title="صدا / سکوت"
-          style={{ width: '38px', height: '38px' }}
-          className={`tv-focusable absolute right-0 rounded-full bg-slate-900/70 border border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800 transition-all flex items-center justify-center ${
+          className={`tv-focusable absolute right-0 sm:right-2 p-2.5 sm:p-3 rounded-full bg-slate-900/70 border border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800 transition-all ${
             focusedElement === 'btn-volume' ? 'tv-focused' : ''
           }`}
         >
