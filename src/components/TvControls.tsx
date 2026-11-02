@@ -1,5 +1,5 @@
 import React from 'react';
-import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX } from 'lucide-react';
+import { Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, ListMusic } from 'lucide-react';
 import { Track } from '../types/player';
 
 interface TvControlsProps {
@@ -15,6 +15,7 @@ interface TvControlsProps {
   onPrev: () => void;
   onSeek: (time: number) => void;
   onToggleMute: () => void;
+  onOpenStationModal: () => void;
 }
 
 export const TvControls: React.FC<TvControlsProps> = ({
@@ -29,6 +30,7 @@ export const TvControls: React.FC<TvControlsProps> = ({
   onPrev,
   onSeek,
   onToggleMute,
+  onOpenStationModal,
 }) => {
   const formatTime = (secs: number) => {
     if (!secs || isNaN(secs) || secs === Infinity) return '00:00';
@@ -132,7 +134,7 @@ export const TvControls: React.FC<TvControlsProps> = ({
           </button>
         </div>
 
-        {/* Mute Button */}
+        {/* Mute Button (Right side) */}
         <button
           onClick={onToggleMute}
           tabIndex={0}
@@ -146,6 +148,18 @@ export const TvControls: React.FC<TvControlsProps> = ({
           ) : (
             <Volume2 className="w-4 h-4 text-slate-400" />
           )}
+        </button>
+
+        {/* Station Modal Trigger Button (Symmetrically placed on the left side, opposite to mute button) */}
+        <button
+          onClick={onOpenStationModal}
+          tabIndex={0}
+          title="لیست ایستگاه‌ها و استریم‌ها"
+          className={`tv-focusable absolute left-0 sm:left-2 p-2.5 sm:p-3 rounded-full bg-slate-900/70 border border-slate-800/80 text-slate-400 hover:text-white hover:bg-slate-800 transition-all ${
+            focusedElement === 'btn-stations' ? 'tv-focused' : ''
+          }`}
+        >
+          <ListMusic className="w-4 h-4 text-pink-400" />
         </button>
       </div>
     </div>

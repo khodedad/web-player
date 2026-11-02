@@ -2,8 +2,8 @@
  * web play - Responsive Fullscreen Web Music Player & Visualizer
  * Fully responsive across Mobile, Tablet, Desktop, and 16:9 Smart TVs.
  * Zoom-invariant proportions using vmin math and 6 distinct fullscreen particle visualizers.
- * Circle and controls shifted slightly lower toward the bottom station list.
- * Zero data waste: buffers are immediately purged upon pause/stop.
+ * Station list moved to a gorgeous modal popup triggered from the bottom-left button (opposite mute button).
+ * Larger cover circle and lower controls layout.
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -13,7 +13,7 @@ import { audioEngine } from './services/audioEngine';
 import { RadialVisualizer } from './components/RadialVisualizer';
 import { CoverCircle } from './components/CoverCircle';
 import { TvControls } from './components/TvControls';
-import { StationList } from './components/StationList';
+import { StationModal } from './components/StationModal';
 import { useTvRemote } from './hooks/useTvRemote';
 
 const VISUALIZER_STYLES: { id: VisualizerStyle; name: string }[] = [
@@ -30,6 +30,7 @@ export default function App() {
   const [currentTrackIndex, setCurrentTrackIndex] = useState<number>(0);
   const [visualizerStyle, setVisualizerStyle] = useState<VisualizerStyle>('avee-ring');
   const [styleToast, setStyleToast] = useState<string | null>(null);
+  const [isStationModalOpen, setIsStationModalOpen] = useState<boolean>(false);
 
   const [audioState, setAudioState] = useState<AudioState>({
     isPlaying: false,
@@ -64,19 +65,14 @@ export default function App() {
 
     try {
       if (audioState.isPlaying) {
-        // 1. Immediately pause audio
         audioRef.current.pause();
-
-        // 2. Kill stream connection & purge network buffer to save data/bandwidth
         audioRef.current.removeAttribute('src');
         audioRef.current.load();
-
         setAudioState((prev) => ({ ...prev, isPlaying: false, isLoading: false }));
       } else {
         setAudioState((prev) => ({ ...prev, isLoading: true, error: null }));
         await audioEngine.setupWebAudio();
 
-        // Reconnect stream fresh
         audioRef.current.src = currentTrack.url;
         audioRef.current.load();
 
@@ -104,7 +100,6 @@ export default function App() {
     const nextStyle = VISUALIZER_STYLES[nextIndex];
     setVisualizerStyle(nextStyle.id);
 
-    // Show temporary stylish confirmation indicator
     setStyleToast(nextStyle.name);
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     toastTimeoutRef.current = setTimeout(() => {
@@ -112,7 +107,7 @@ export default function App() {
     }, 1500);
   }, [visualizerStyle]);
 
-  // Track Selector - Does not buffer until played
+  // Track Selector
   const handleSelectTrack = useCallback((track: Track) => {
     const idx = tracks.findIndex((t) => t.id === track.id);
     if (idx !== -1) {
@@ -142,7 +137,7 @@ export default function App() {
 
     if (isInitialMount.current) {
       isInitialMount.current = false;
-      return; // Do not buffer on initial page load
+      return;
     }
 
     if (isPlayingRef.current) {
@@ -161,7 +156,6 @@ export default function App() {
           });
       }
     } else {
-      // Stopped/paused: remove src to prevent any background preloading
       audioRef.current.removeAttribute('src');
     }
   }, [currentTrack]);
@@ -201,15 +195,12 @@ export default function App() {
     'btn-play',
     'btn-prev',
     'btn-volume',
+    'btn-stations',
     'seekbar',
-    ...tracks.map((_, i) => `station-${i}`),
   ];
 
   const handleSelectFocusedElement = (elementId: string) => {
-    if (elementId.startsWith('station-')) {
-      const idx = parseInt(elementId.replace('station-', ''), 10);
-      if (tracks[idx]) handleSelectTrack(tracks[idx]);
-    } else if (elementId === 'btn-play') {
+    if (elementId === 'btn-play') {
       togglePlayPause();
     } else if (elementId === 'btn-next') {
       handleNextTrack();
@@ -217,6 +208,8 @@ export default function App() {
       handlePrevTrack();
     } else if (elementId === 'btn-volume') {
       handleToggleMute();
+    } else if (elementId === 'btn-stations') {
+      setIsStationModalOpen(true);
     }
   };
 
@@ -230,7 +223,7 @@ export default function App() {
       onSeekBackward: handleSeekBackward,
       onSelectFocusedElement: handleSelectFocusedElement,
     },
-    false
+    isStationModalOpen
   );
 
   const colors: [string, string] = currentTrack.gradientColors || ['#ec4899', '#8b5cf6'];
@@ -238,14 +231,14 @@ export default function App() {
   return (
     <div 
       style={{
-        paddingTop: 'clamp(4px, 1vmin, 12px)',
-        paddingBottom: 'clamp(4px, 1vmin, 12px)',
+        paddingTop: 'clamp(8px, 2vmin, 20px)',
+        paddingBottom: 'clamp(8px, 2vmin, 20px)',
         paddingLeft: 'clamp(8px, 2vmin, 24px)',
         paddingRight: 'clamp(8px, 2vmin, 24px)',
       }}
       className="fixed inset-0 w-screen h-screen overflow-hidden bg-[#030712] text-slate-100 flex flex-col justify-between items-center select-none"
     >
-      {/* Hidden Audio Player Element with preload="none" for zero idle data usage */}
+      {/* Hidden Audio Player Element with preload="none" */}
       <audio
         ref={audioRef}
         crossOrigin="anonymous"
@@ -273,7 +266,7 @@ export default function App() {
       {styleToast && (
         <div 
           style={{
-            top: 'clamp(10px, 2vmin, 24px)',
+            top: 'clamp(12px, 2.5vmin, 28px)',
             fontSize: 'clamp(0.72rem, 1.4vmin, 0.95rem)',
             padding: 'clamp(4px, 0.8vmin, 8px) clamp(12px, 2.2vmin, 22px)',
           }}
@@ -287,11 +280,11 @@ export default function App() {
       <div
         className="absolute inset-0 pointer-events-none opacity-25 transition-opacity duration-1000"
         style={{
-          background: `radial-gradient(circle at 50% 42%, ${colors[0]}33 0%, ${colors[1]}15 50%, #030712 100%)`,
+          background: `radial-gradient(circle at 50% 45%, ${colors[0]}33 0%, ${colors[1]}15 50%, #030712 100%)`,
         }}
       />
 
-      {/* Fullscreen Web Audio Radial Canvas Visualizer - Dynamically Centered with Fullscreen Particles */}
+      {/* Fullscreen Web Audio Radial Canvas Visualizer - Full screen background */}
       <RadialVisualizer
         style={visualizerStyle}
         isPlaying={audioState.isPlaying}
@@ -299,8 +292,8 @@ export default function App() {
         circleRef={circleRef}
       />
 
-      {/* 1. UPPER STAGE: CoverCircle shifted slightly lower */}
-      <div className="relative z-20 flex-[1.1] flex items-center justify-center w-full pt-4">
+      {/* 1. UPPER STAGE: Larger CoverCircle for maximized visual impact */}
+      <div className="relative z-20 flex-[1.4] flex items-center justify-center w-full pt-2">
         <CoverCircle
           ref={circleRef}
           currentTrack={currentTrack}
@@ -311,8 +304,8 @@ export default function App() {
         />
       </div>
 
-      {/* 2. LOWER MIDWAY STAGE: Title, Seekbar, and Transport Controls closer to station list */}
-      <main className="relative z-20 flex-[0.9] flex flex-col items-center justify-end w-full pb-3">
+      {/* 2. LOWER STAGE: Title, Seekbar, Transport Controls, and Station Modal Button */}
+      <main className="relative z-20 flex-[0.8] flex flex-col items-center justify-end w-full pb-6">
         <TvControls
           currentTrack={currentTrack}
           isPlaying={audioState.isPlaying}
@@ -326,15 +319,17 @@ export default function App() {
           onPrev={handlePrevTrack}
           onSeek={handleSeek}
           onToggleMute={handleToggleMute}
+          onOpenStationModal={() => setIsStationModalOpen(true)}
         />
       </main>
 
-      {/* 3. BOTTOM STAGE: Station Switcher Bar */}
-      <StationList
+      {/* 3. Station Selection Modal Popup */}
+      <StationModal
+        isOpen={isStationModalOpen}
         tracks={tracks}
         currentTrackId={currentTrack.id}
         isPlaying={audioState.isPlaying}
-        focusedElement={focusedElement}
+        onClose={() => setIsStationModalOpen(false)}
         onSelectTrack={handleSelectTrack}
       />
     </div>
