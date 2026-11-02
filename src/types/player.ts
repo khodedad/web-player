@@ -12,7 +12,13 @@ export interface Track {
   gradientColors?: [string, string];
 }
 
-export type VisualizerStyle = 'avee-ring' | 'neon-waves' | 'particle-orbit' | 'dual-spectrum' | 'bars-3d';
+export type VisualizerStyle = 
+  | 'avee-ring'
+  | 'neon-tunnel'
+  | 'quantum-waves'
+  | 'starburst'
+  | 'dual-spectrum'
+  | 'cyber-equalizer';
 
 export interface AudioState {
   isPlaying: boolean;

@@ -3,6 +3,9 @@
 @layer base {
   :root {
     font-family: 'Vazirmatn', 'Outfit', system-ui, -apple-system, sans-serif;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    touch-action: none;
   }
 
   html, body {
@@ -12,14 +15,18 @@
     height: 100vh;
     overflow: hidden !important;
     position: fixed;
-    touch-action: none;
-    -webkit-user-select: none;
-    user-select: none;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: #030712;
     color: #f8fafc;
+    -webkit-user-select: none;
+    user-select: none;
+    box-sizing: border-box;
   }
 
-  /* Hide all scrollbars on TV engines */
+  /* Completely hide all scrollbars across TV Chromium and mobile */
   ::-webkit-scrollbar {
     display: none;
     width: 0px;
@@ -43,4 +50,3 @@
   box-shadow: 0 0 0 3px #ec4899;
   border-color: #ec4899 !important;
 }
-

@@ -1,7 +1,9 @@
 /**
  * web play - Responsive Fullscreen Web Music Player & Visualizer
  * Fully responsive across Mobile, Tablet, Desktop, and 16:9 Smart TVs.
- * Multiple lightweight Web Audio API visualizer styles cyclable by tapping the central circle.
+ * Zoom-invariant proportions using vmin math and 6 distinct fullscreen particle visualizers.
+ * Cover circle anchored in its original natural position; controls positioned midway between circle and station list.
+ * Zero data waste: buffers are immediately purged upon pause/stop.
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
@@ -16,10 +18,11 @@ import { useTvRemote } from './hooks/useTvRemote';
 
 const VISUALIZER_STYLES: { id: VisualizerStyle; name: string }[] = [
   { id: 'avee-ring', name: 'حلقه رادیال Avee' },
-  { id: 'neon-waves', name: 'امواج نئون' },
-  { id: 'dual-spectrum', name: 'طیف دوطرفه' },
-  { id: 'particle-orbit', name: 'مدار کوانتومی' },
-  { id: 'bars-3d', name: 'آرک سایبری' },
+  { id: 'neon-tunnel', name: 'تونل نئونی ۳ بعدی' },
+  { id: 'quantum-waves', name: 'امواج کوانتومی' },
+  { id: 'starburst', name: 'کهکشان پرتوهای نوری' },
+  { id: 'dual-spectrum', name: 'طیف دوطرفه اینتنس' },
+  { id: 'cyber-equalizer', name: 'اکولایزر سایبرپانک' },
 ];
 
 export default function App() {
@@ -42,6 +45,10 @@ export default function App() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const circleRef = useRef<HTMLDivElement | null>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isInitialMount = useRef<boolean>(true);
+  const isPlayingRef = useRef<boolean>(false);
+  isPlayingRef.current = audioState.isPlaying;
+
   const currentTrack = tracks[currentTrackIndex] || PRESET_TRACKS[0];
 
   // Initialize Web Audio Engine with Audio Element
@@ -51,18 +58,28 @@ export default function App() {
     }
   }, []);
 
-  // Handle Play/Pause Toggle
+  // Handle Play/Pause Toggle with zero background buffering on stop
   const togglePlayPause = useCallback(async () => {
     if (!audioRef.current) return;
 
     try {
-      await audioEngine.setupWebAudio();
-
       if (audioState.isPlaying) {
+        // 1. Immediately pause audio
         audioRef.current.pause();
-        setAudioState((prev) => ({ ...prev, isPlaying: false }));
+
+        // 2. Kill stream connection & purge network buffer to save data/bandwidth
+        audioRef.current.removeAttribute('src');
+        audioRef.current.load();
+
+        setAudioState((prev) => ({ ...prev, isPlaying: false, isLoading: false }));
       } else {
         setAudioState((prev) => ({ ...prev, isLoading: true, error: null }));
+        await audioEngine.setupWebAudio();
+
+        // Reconnect stream fresh
+        audioRef.current.src = currentTrack.url;
+        audioRef.current.load();
+
         const playPromise = audioRef.current.play();
         if (playPromise !== undefined) {
           await playPromise;
@@ -71,17 +88,16 @@ export default function App() {
         }
       }
     } catch (err) {
-      console.error('Audio playback error:', err);
+      console.warn('Playback toggle handled:', err);
       setAudioState((prev) => ({
         ...prev,
         isPlaying: false,
         isLoading: false,
-        error: 'خطا در برقراری اتصال',
       }));
     }
-  }, [audioState.isPlaying]);
+  }, [audioState.isPlaying, currentTrack.url]);
 
-  // Tap on Central Circle cycles through beautiful visualizer types
+  // Tap on Central Circle cycles through 6 beautiful visualizer types
   const handleCycleVisualizer = useCallback(() => {
     const currentIndex = VISUALIZER_STYLES.findIndex((s) => s.id === visualizerStyle);
     const nextIndex = (currentIndex + 1) % VISUALIZER_STYLES.length;
@@ -96,7 +112,7 @@ export default function App() {
     }, 1500);
   }, [visualizerStyle]);
 
-  // Track Selector
+  // Track Selector - Does not buffer until played
   const handleSelectTrack = useCallback((track: Track) => {
     const idx = tracks.findIndex((t) => t.id === track.id);
     if (idx !== -1) {
@@ -105,7 +121,6 @@ export default function App() {
         ...prev,
         currentTime: 0,
         duration: 0,
-        isPlaying: false,
         error: null,
       }));
     }
@@ -121,31 +136,34 @@ export default function App() {
     handleSelectTrack(tracks[prevIdx]);
   }, [currentTrackIndex, tracks, handleSelectTrack]);
 
-  // Auto Play when track changes if was playing
+  // When track changes: load new URL and auto-continue playback only if was ALREADY playing
   useEffect(() => {
     if (!audioRef.current) return;
 
-    audioRef.current.src = currentTrack.url;
-    audioRef.current.load();
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return; // Do not buffer on initial page load
+    }
 
-    const handleCanPlay = async () => {
-      try {
-        await audioEngine.setupWebAudio();
-        const playPromise = audioRef.current?.play();
-        if (playPromise !== undefined) {
-          await playPromise;
-          setAudioState((prev) => ({ ...prev, isPlaying: true, isLoading: false }));
-        }
-      } catch (err) {
-        setAudioState((prev) => ({ ...prev, isPlaying: false, isLoading: false }));
+    if (isPlayingRef.current) {
+      setAudioState((prev) => ({ ...prev, isLoading: true }));
+      audioRef.current.src = currentTrack.url;
+      audioRef.current.load();
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            setAudioState((prev) => ({ ...prev, isPlaying: true, isLoading: false }));
+          })
+          .catch((err) => {
+            console.warn('Playback awaiting user action:', err);
+            setAudioState((prev) => ({ ...prev, isPlaying: false, isLoading: false }));
+          });
       }
-    };
-
-    audioRef.current.addEventListener('canplay', handleCanPlay, { once: true });
-
-    return () => {
-      audioRef.current?.removeEventListener('canplay', handleCanPlay);
-    };
+    } else {
+      // Stopped/paused: remove src to prevent any background preloading
+      audioRef.current.removeAttribute('src');
+    }
   }, [currentTrack]);
 
   // Seek Handler for MP3 files
@@ -218,11 +236,20 @@ export default function App() {
   const colors: [string, string] = currentTrack.gradientColors || ['#ec4899', '#8b5cf6'];
 
   return (
-    <div className="fixed inset-0 w-screen h-screen overflow-hidden bg-[#030712] text-slate-100 flex flex-col justify-between items-center py-3 sm:py-6 px-4 select-none">
-      {/* Hidden Audio Player Element */}
+    <div 
+      style={{
+        paddingTop: 'clamp(6px, 1.2vmin, 16px)',
+        paddingBottom: 'clamp(6px, 1.2vmin, 16px)',
+        paddingLeft: 'clamp(8px, 2vmin, 24px)',
+        paddingRight: 'clamp(8px, 2vmin, 24px)',
+      }}
+      className="fixed inset-0 w-screen h-screen overflow-hidden bg-[#030712] text-slate-100 flex flex-col justify-between items-center select-none"
+    >
+      {/* Hidden Audio Player Element with preload="none" for zero idle data usage */}
       <audio
         ref={audioRef}
         crossOrigin="anonymous"
+        preload="none"
         onTimeUpdate={() => {
           if (audioRef.current) {
             setAudioState((prev) => ({
@@ -238,14 +265,20 @@ export default function App() {
             ...prev,
             isPlaying: false,
             isLoading: false,
-            error: 'خطا در بارگیری استریم رادیو',
           }));
         }}
       />
 
       {/* Visualizer Style Change Notification Toast */}
       {styleToast && (
-        <div className="absolute top-5 z-40 px-4 py-1.5 rounded-full bg-slate-900/90 border border-pink-500/50 text-xs font-semibold text-pink-300 shadow-xl backdrop-blur-md pointer-events-none transition-all animate-bounce">
+        <div 
+          style={{
+            top: 'clamp(12px, 2.5vmin, 28px)',
+            fontSize: 'clamp(0.72rem, 1.4vmin, 0.95rem)',
+            padding: 'clamp(4px, 0.8vmin, 8px) clamp(12px, 2.2vmin, 22px)',
+          }}
+          className="absolute z-40 rounded-full bg-slate-900/90 border border-pink-500/50 font-semibold text-pink-300 shadow-xl backdrop-blur-md pointer-events-none transition-all animate-bounce"
+        >
           {styleToast}
         </div>
       )}
@@ -254,11 +287,11 @@ export default function App() {
       <div
         className="absolute inset-0 pointer-events-none opacity-25 transition-opacity duration-1000"
         style={{
-          background: `radial-gradient(circle at 50% 40%, ${colors[0]}33 0%, ${colors[1]}15 50%, #030712 100%)`,
+          background: `radial-gradient(circle at 50% 38%, ${colors[0]}33 0%, ${colors[1]}15 50%, #030712 100%)`,
         }}
       />
 
-      {/* Fullscreen Web Audio Radial Canvas Visualizer - Dynamically Centered */}
+      {/* Fullscreen Web Audio Radial Canvas Visualizer - Dynamically Centered with Fullscreen Particles */}
       <RadialVisualizer
         style={visualizerStyle}
         isPlaying={audioState.isPlaying}
@@ -266,9 +299,8 @@ export default function App() {
         circleRef={circleRef}
       />
 
-      {/* Main Center Stage: Responsive Circle + Minimalist Controls */}
-      <main className="relative flex-1 flex flex-col items-center justify-center gap-4 sm:gap-6 z-20 w-full my-auto">
-        {/* Center Cover / Vinyl Circle - Clicking cycles visualizer styles */}
+      {/* 1. UPPER STAGE: Anchors CoverCircle at its natural original position (~38vh) */}
+      <div className="relative z-20 flex-1 flex items-center justify-center w-full min-h-[46vh] max-h-[55vh]">
         <CoverCircle
           ref={circleRef}
           currentTrack={currentTrack}
@@ -277,8 +309,11 @@ export default function App() {
           isFocused={focusedElement === 'cover-circle'}
           onClick={handleCycleVisualizer}
         />
+      </div>
 
-        {/* Media Controls & Track Info */}
+      {/* 2. LOWER MIDWAY STAGE: Title, Seekbar, and Transport Controls */}
+      {/* Positioned midway between the circle and the bottom station list */}
+      <main className="relative z-20 flex-1 flex flex-col items-center justify-center w-full min-h-0">
         <TvControls
           currentTrack={currentTrack}
           isPlaying={audioState.isPlaying}
@@ -295,7 +330,7 @@ export default function App() {
         />
       </main>
 
-      {/* Quiet, Minimalist Station Switcher Bar */}
+      {/* 3. BOTTOM STAGE: Station Switcher Bar */}
       <StationList
         tracks={tracks}
         currentTrackId={currentTrack.id}

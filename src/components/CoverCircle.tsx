@@ -25,11 +25,15 @@ export const CoverCircle = forwardRef<HTMLDivElement, CoverCircleProps>(({
       ref={ref}
       onClick={onClick}
       title="ضربه بزنید تا نوع ویژوالایزر تغییر کند"
-      className={`relative rounded-full cursor-pointer transition-all duration-300 transform select-none flex items-center justify-center shrink-0 w-[min(46vw,32vh)] h-[min(46vw,32vh)] min-w-[140px] min-h-[140px] max-w-[260px] max-h-[260px] active:scale-95 ${
+      style={{
+        width: 'clamp(130px, 31vmin, 300px)',
+        height: 'clamp(130px, 31vmin, 300px)',
+      }}
+      className={`relative rounded-full cursor-pointer transition-transform duration-300 transform select-none flex items-center justify-center shrink-0 active:scale-95 ${
         isFocused ? 'ring-4 ring-pink-500 scale-105' : ''
       }`}
     >
-      {/* Outer Subtle Glow Ring */}
+      {/* Outer Subtle Glow Halo */}
       <div
         className="absolute inset-0 rounded-full opacity-40 transition-opacity duration-700 pointer-events-none"
         style={{
@@ -61,25 +65,28 @@ export const CoverCircle = forwardRef<HTMLDivElement, CoverCircleProps>(({
         ) : (
           /* High-End Sleek Gradient Fallback */
           <div
-            className="w-full h-full rounded-full flex flex-col items-center justify-center p-4 text-center relative overflow-hidden"
+            className="w-full h-full rounded-full flex flex-col items-center justify-center p-3 text-center relative overflow-hidden"
             style={{
               background: `linear-gradient(135deg, ${gradientColors[0]}, ${gradientColors[1]})`,
             }}
           >
-            <div className="z-10 p-3 rounded-full bg-black/25 backdrop-blur-sm mb-1 shadow-inner border border-white/10">
-              <Music className="w-8 h-8 text-white" />
+            <div className="z-10 p-2.5 rounded-full bg-black/25 backdrop-blur-sm mb-1 shadow-inner border border-white/10">
+              <Music className="w-6 h-6 text-white" />
             </div>
-            <div className="z-10 text-white font-bold text-sm max-w-[85%] truncate drop-shadow-sm">
+            <div className="z-10 text-white font-bold text-xs max-w-[85%] truncate drop-shadow-sm">
               {currentTrack.title}
             </div>
-            <div className="z-10 text-white/80 text-[11px] truncate max-w-[85%]">
+            <div className="z-10 text-white/80 text-[10px] truncate max-w-[85%]">
               {currentTrack.artist}
             </div>
           </div>
         )}
 
         {/* Center Vinyl Spindle Hole */}
-        <div className="absolute w-7 h-7 rounded-full bg-slate-950 border border-slate-700/80 shadow-inner flex items-center justify-center z-20">
+        <div 
+          style={{ width: 'clamp(24px, 4.5vmin, 44px)', height: 'clamp(24px, 4.5vmin, 44px)' }}
+          className="absolute rounded-full bg-slate-950 border border-slate-700/80 shadow-inner flex items-center justify-center z-20"
+        >
           <Disc className="w-3.5 h-3.5 text-slate-400" />
         </div>
       </div>
