@@ -2,7 +2,7 @@
  * web play - Responsive Fullscreen Web Music Player & Visualizer
  * Fully responsive across Mobile, Tablet, Desktop, and 16:9 Smart TVs.
  * Zoom-invariant proportions using vmin math and 6 distinct fullscreen particle visualizers.
- * Cover circle anchored in its original natural position; controls positioned midway between circle and station list.
+ * Circle and controls shifted slightly lower toward the bottom station list.
  * Zero data waste: buffers are immediately purged upon pause/stop.
  */
 
@@ -238,8 +238,8 @@ export default function App() {
   return (
     <div 
       style={{
-        paddingTop: 'clamp(6px, 1.2vmin, 16px)',
-        paddingBottom: 'clamp(6px, 1.2vmin, 16px)',
+        paddingTop: 'clamp(4px, 1vmin, 12px)',
+        paddingBottom: 'clamp(4px, 1vmin, 12px)',
         paddingLeft: 'clamp(8px, 2vmin, 24px)',
         paddingRight: 'clamp(8px, 2vmin, 24px)',
       }}
@@ -273,7 +273,7 @@ export default function App() {
       {styleToast && (
         <div 
           style={{
-            top: 'clamp(12px, 2.5vmin, 28px)',
+            top: 'clamp(10px, 2vmin, 24px)',
             fontSize: 'clamp(0.72rem, 1.4vmin, 0.95rem)',
             padding: 'clamp(4px, 0.8vmin, 8px) clamp(12px, 2.2vmin, 22px)',
           }}
@@ -287,7 +287,7 @@ export default function App() {
       <div
         className="absolute inset-0 pointer-events-none opacity-25 transition-opacity duration-1000"
         style={{
-          background: `radial-gradient(circle at 50% 38%, ${colors[0]}33 0%, ${colors[1]}15 50%, #030712 100%)`,
+          background: `radial-gradient(circle at 50% 42%, ${colors[0]}33 0%, ${colors[1]}15 50%, #030712 100%)`,
         }}
       />
 
@@ -299,8 +299,8 @@ export default function App() {
         circleRef={circleRef}
       />
 
-      {/* 1. UPPER STAGE: Anchors CoverCircle at its natural original position (~38vh) */}
-      <div className="relative z-20 flex-1 flex items-center justify-center w-full min-h-[46vh] max-h-[55vh]">
+      {/* 1. UPPER STAGE: CoverCircle shifted slightly lower */}
+      <div className="relative z-20 flex-[1.1] flex items-center justify-center w-full pt-4">
         <CoverCircle
           ref={circleRef}
           currentTrack={currentTrack}
@@ -311,9 +311,8 @@ export default function App() {
         />
       </div>
 
-      {/* 2. LOWER MIDWAY STAGE: Title, Seekbar, and Transport Controls */}
-      {/* Positioned midway between the circle and the bottom station list */}
-      <main className="relative z-20 flex-1 flex flex-col items-center justify-center w-full min-h-0">
+      {/* 2. LOWER MIDWAY STAGE: Title, Seekbar, and Transport Controls closer to station list */}
+      <main className="relative z-20 flex-[0.9] flex flex-col items-center justify-end w-full pb-3">
         <TvControls
           currentTrack={currentTrack}
           isPlaying={audioState.isPlaying}

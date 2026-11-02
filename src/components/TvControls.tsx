@@ -102,7 +102,7 @@ export const TvControls: React.FC<TvControlsProps> = ({
           style={{ fontSize: 'clamp(0.6rem, 1.25vmin, 0.85rem)' }}
           className="flex justify-between items-center font-mono font-medium text-slate-500 px-0.5"
         >
-          <span>{isLive ? '🔴 پخش زنده' : formatTime(currentTime)}</span>
+          <span>{isLive ? 'پخش زنده' : formatTime(currentTime)}</span>
           <span>{isLive ? 'رادیو ۲۴/۷' : formatTime(duration)}</span>
         </div>
       </div>

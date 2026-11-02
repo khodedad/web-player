@@ -1,5 +1,6 @@
 import React from 'react';
 import { Track } from '../types/player';
+import { Radio, Music } from 'lucide-react';
 
 interface StationListProps {
   tracks: Track[];
@@ -22,8 +23,8 @@ export const StationList: React.FC<StationListProps> = ({
       className="w-full z-20 select-none flex justify-center"
     >
       <div 
-        style={{ gap: 'clamp(6px, 1.2vmin, 12px)' }}
-        className="flex items-center overflow-x-auto no-scrollbar py-0.5 max-w-xl w-full justify-start sm:justify-center"
+        style={{ gap: 'clamp(8px, 1.6vmin, 16px)' }}
+        className="flex items-center overflow-x-auto no-scrollbar py-1 max-w-2xl w-full justify-start sm:justify-center"
       >
         {tracks.map((track, idx) => {
           const isActive = track.id === currentTrackId;
@@ -35,19 +36,32 @@ export const StationList: React.FC<StationListProps> = ({
               onClick={() => onSelectTrack(track)}
               tabIndex={0}
               style={{
-                fontSize: 'clamp(0.68rem, 1.35vmin, 0.92rem)',
-                padding: 'clamp(4px, 0.9vmin, 8px) clamp(8px, 1.8vmin, 16px)',
+                fontSize: 'clamp(0.72rem, 1.5vmin, 1rem)',
+                padding: 'clamp(6px, 1.1vmin, 10px) clamp(10px, 2.2vmin, 18px)',
               }}
-              className={`tv-focusable shrink-0 flex items-center gap-1.5 rounded-full transition-all ${
+              className={`tv-focusable shrink-0 flex items-center gap-2 rounded-xl transition-all ${
                 isActive
-                  ? 'bg-slate-800 text-pink-400 border border-pink-500/50 font-semibold shadow-sm'
-                  : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-slate-800/60'
+                  ? 'bg-slate-800 text-pink-400 border border-pink-500/60 font-bold shadow-lg scale-105'
+                  : 'bg-slate-900/80 text-slate-300 hover:text-white hover:bg-slate-800/80 border border-slate-700/60'
               } ${focusedElement === focusKey ? 'tv-focused' : ''}`}
             >
-              {isActive && (
-                <span className={`w-1.5 h-1.5 rounded-full bg-pink-500 ${isPlaying ? 'animate-ping' : ''}`} />
-              )}
-              <span className="truncate max-w-[120px]">{track.title}</span>
+              {/* Force explicit icon thumbnail for robust TV rendering */}
+              <div 
+                style={{ width: 'clamp(20px, 3vmin, 28px)', height: 'clamp(20px, 3vmin, 28px)' }}
+                className="rounded-lg bg-slate-800 flex items-center justify-center shrink-0 border border-slate-700/80 overflow-hidden relative"
+              >
+                {track.coverUrl ? (
+                  <img src={track.coverUrl} alt={track.title} className="w-full h-full object-cover" />
+                ) : (
+                  <Radio className="w-3.5 h-3.5 text-pink-400" />
+                )}
+                {isActive && isPlaying && (
+                  <div className="absolute inset-0 bg-pink-600/60 flex items-center justify-center">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping" />
+                  </div>
+                )}
+              </div>
+              <span className="truncate max-w-[130px]">{track.title}</span>
             </button>
           );
         })}
