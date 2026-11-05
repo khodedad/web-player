@@ -1,4 +1,4 @@
-import React, { forwardRef, useState } from 'react';
+import React, { forwardRef, useState, useEffect } from 'react';
 import { Track } from '../types/player';
 import { Disc, Music, Radio } from 'lucide-react';
 
@@ -17,10 +17,22 @@ export const CoverCircle = forwardRef<HTMLDivElement, CoverCircleProps>(({
   isFocused = false,
   onClick,
 }, ref) => {
-  const [imgError, setImgError] = useState(false);
+  const [imgSrc, setImgSrc] = useState<string>(currentTrack.coverUrl || '');
+  const [useFallback, setUseFallback] = useState<boolean>(false);
 
-  // Try primary coverUrl first, fallback if error occurs to an unblocked public image source
-  const imageSrc = imgError ? 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80' : currentTrack.coverUrl;
+  useEffect(() => {
+    setImgError(false);
+    setUseFallback(false);
+    setImgSrc(currentTrack.coverUrl || '');
+  }, [currentTrack]);
+
+  const setImgError = (_err: boolean) => {
+    if (!useFallback) {
+      setUseFallback(true);
+      // Fallback to unblocked Google/Wikimedia image URL
+      setImgSrc('https://upload.wikimedia.org/wikipedia/commons/2/26/Spotify_logo_with_text.svg');
+    }
+  };
 
   return (
     <div
@@ -49,7 +61,7 @@ export const CoverCircle = forwardRef<HTMLDivElement, CoverCircleProps>(({
       >
         <div className="relative w-full h-full">
           <img
-            src={imageSrc}
+            src={imgSrc}
             alt={currentTrack.title}
             onError={() => setImgError(true)}
             className={`w-full h-full object-cover rounded-full transition-transform duration-700 ${
