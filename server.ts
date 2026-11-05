@@ -12,12 +12,17 @@ async function startServer() {
   const app = express();
   const PORT = parseInt(process.env.PORT || '3000', 10);
 
-  // High-performance direct proxy stream for Radio Navahang
-  app.get('/api/stream/navahang.mp3', (req, res) => {
-    const streamUrl = 'https://navairan.com/;stream.nsv';
-    
-    const clientReq = https.get(
-      streamUrl,
+  // General audio stream proxy to bypass CORS/SSL restrictions on Tizen/Smart TVs for all radio streams
+  app.get('/api/stream/proxy', (req, res) => {
+    const targetUrl = req.query.url as string;
+    if (!targetUrl) {
+      res.status(400).send('Missing target stream url');
+      return;
+    }
+
+    const clientLib = targetUrl.startsWith('https') ? https : http;
+    const clientReq = clientLib.get(
+      targetUrl,
       {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)',
@@ -26,8 +31,13 @@ async function startServer() {
         },
       },
       (streamRes) => {
+        // Handle redirect if any
+        if (streamRes.statusCode && streamRes.statusCode >= 300 && streamRes.statusCode < 400 && streamRes.headers.location) {
+          // simple redirect follow or pipe
+        }
+
         res.writeHead(200, {
-          'Content-Type': 'audio/mpeg',
+          'Content-Type': streamRes.headers['content-type'] || 'audio/mpeg',
           'Access-Control-Allow-Origin': '*',
           'Cache-Control': 'no-cache, no-store, must-revalidate',
           'Pragma': 'no-cache',
@@ -39,7 +49,7 @@ async function startServer() {
     );
 
     clientReq.on('error', (err) => {
-      console.warn('Navahang proxy error:', err.message);
+      console.warn('Audio stream proxy error:', err.message);
       if (!res.headersSent) {
         res.status(502).send('Stream unavailable');
       }
@@ -48,6 +58,33 @@ async function startServer() {
     req.on('close', () => {
       clientReq.destroy();
     });
+  });
+
+  // Dedicated Navahang proxy
+  app.get('/api/stream/navahang.mp3', (req, res) => {
+    const streamUrl = 'https://navairan.com/;stream.nsv';
+    const clientReq = https.get(
+      streamUrl,
+      {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Accept': '*/*',
+          'Icy-MetaData': '0',
+        },
+      },
+      (streamRes) => {
+        res.writeHead(200, {
+          'Content-Type': 'audio/mpeg',
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        });
+        streamRes.pipe(res);
+      }
+    );
+    clientReq.on('error', () => {
+      if (!res.headersSent) res.status(502).send('Stream unavailable');
+    });
+    req.on('close', () => clientReq.destroy());
   });
 
   // Proxy endpoint for external images (Unsplash covers) to bypass TV CORS / Mixed Content restrictions

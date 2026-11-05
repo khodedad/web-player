@@ -1,6 +1,6 @@
-import React, { forwardRef } from 'react';
+import React, { forwardRef, useState } from 'react';
 import { Track } from '../types/player';
-import { Disc, Radio } from 'lucide-react';
+import { Disc, Music, Radio } from 'lucide-react';
 
 interface CoverCircleProps {
   currentTrack: Track;
@@ -17,6 +17,9 @@ export const CoverCircle = forwardRef<HTMLDivElement, CoverCircleProps>(({
   isFocused = false,
   onClick,
 }, ref) => {
+  const [imgError, setImgError] = useState(false);
+  const hasCover = currentTrack.coverUrl && !imgError;
+
   return (
     <div
       ref={ref}
@@ -36,41 +39,44 @@ export const CoverCircle = forwardRef<HTMLDivElement, CoverCircleProps>(({
         }}
       />
 
-      {/* Main TV-Proof Vector Artwork Circle */}
+      {/* Main Vinyl / Artwork Circle */}
       <div
         className={`relative w-full h-full rounded-full overflow-hidden border-2 border-slate-700/65 shadow-2xl flex items-center justify-center bg-slate-900 transition-transform duration-700 ${
           isPlaying ? 'scale-[1.02]' : ''
         }`}
-        style={{
-          background: `radial-gradient(circle at center, #0f172a 0%, #030712 100%)`,
-        }}
       >
-        {/* Dynamic Vector Gradient Artwork Backdrop */}
-        <div 
-          className="absolute inset-0 opacity-80"
-          style={{
-            background: `linear-gradient(135deg, ${gradientColors[0]}cc, ${gradientColors[1]}cc)`,
-          }}
-        />
-
-        {/* Vinyl Grooves Texture Rings */}
-        <div className="absolute inset-2 rounded-full border border-white/10 pointer-events-none" />
-        <div className="absolute inset-8 rounded-full border border-white/10 pointer-events-none" />
-        <div className="absolute inset-16 rounded-full border border-white/10 pointer-events-none" />
-        <div className="absolute inset-24 rounded-full border border-white/10 pointer-events-none" />
-
-        {/* Inner Content */}
-        <div className="relative z-10 flex flex-col items-center justify-center p-4 text-center">
-          <div className="p-3 rounded-full bg-black/45 backdrop-blur-md mb-2 shadow-inner border border-white/20 text-white animate-pulse">
-            <Radio className="w-8 h-8 sm:w-10 sm:h-10 text-pink-300" />
+        {hasCover ? (
+          <div className="relative w-full h-full">
+            <img
+              src={`/api/image-proxy?url=${encodeURIComponent(currentTrack.coverUrl!)}`}
+              alt={currentTrack.title}
+              onError={() => setImgError(true)}
+              className={`w-full h-full object-cover rounded-full transition-transform duration-700 ${
+                isPlaying ? 'scale-105' : 'scale-100 opacity-90'
+              }`}
+            />
+            {/* Subtle Vinyl Grooves Radial Overlay */}
+            <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,_transparent_35%,_rgba(0,0,0,0.5)_95%)] pointer-events-none" />
           </div>
-          <div className="text-white font-black text-sm sm:text-lg max-w-[85%] truncate drop-shadow-md">
-            {currentTrack.title}
+        ) : (
+          /* High-End Sleek Gradient Fallback */
+          <div
+            className="w-full h-full rounded-full flex flex-col items-center justify-center p-4 text-center relative overflow-hidden"
+            style={{
+              background: `linear-gradient(135deg, ${gradientColors[0]}, ${gradientColors[1]})`,
+            }}
+          >
+            <div className="z-10 p-3 rounded-full bg-black/25 backdrop-blur-sm mb-1.5 shadow-inner border border-white/10">
+              <Radio className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+            </div>
+            <div className="z-10 text-white font-bold text-sm sm:text-base max-w-[85%] truncate drop-shadow-sm">
+              {currentTrack.title}
+            </div>
+            <div className="z-10 text-white/80 text-xs sm:text-sm truncate max-w-[85%]">
+              {currentTrack.artist}
+            </div>
           </div>
-          <div className="text-white/90 text-xs sm:text-sm truncate max-w-[85%] font-medium mt-0.5">
-            {currentTrack.artist}
-          </div>
-        </div>
+        )}
 
         {/* Center Vinyl Spindle Hole */}
         <div className="absolute w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-slate-950 border border-slate-700/80 shadow-inner flex items-center justify-center z-25">
