@@ -18,7 +18,9 @@ export const CoverCircle = forwardRef<HTMLDivElement, CoverCircleProps>(({
   onClick,
 }, ref) => {
   const [imgError, setImgError] = useState(false);
-  const hasCover = currentTrack.coverUrl && !imgError;
+
+  // Try primary coverUrl first, fallback if error occurs to an unblocked public image source
+  const imageSrc = imgError ? 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80' : currentTrack.coverUrl;
 
   return (
     <div
@@ -45,38 +47,18 @@ export const CoverCircle = forwardRef<HTMLDivElement, CoverCircleProps>(({
           isPlaying ? 'scale-[1.02]' : ''
         }`}
       >
-        {hasCover ? (
-          <div className="relative w-full h-full">
-            <img
-              src={currentTrack.coverUrl!}
-              alt={currentTrack.title}
-              onError={() => setImgError(true)}
-              className={`w-full h-full object-cover rounded-full transition-transform duration-700 ${
-                isPlaying ? 'scale-105' : 'scale-100 opacity-90'
-              }`}
-            />
-            {/* Subtle Vinyl Grooves Radial Overlay */}
-            <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,_transparent_35%,_rgba(0,0,0,0.5)_95%)] pointer-events-none" />
-          </div>
-        ) : (
-          /* High-End Sleek Gradient Fallback */
-          <div
-            className="w-full h-full rounded-full flex flex-col items-center justify-center p-4 text-center relative overflow-hidden"
-            style={{
-              background: `linear-gradient(135deg, ${gradientColors[0]}, ${gradientColors[1]})`,
-            }}
-          >
-            <div className="z-10 p-3 rounded-full bg-black/25 backdrop-blur-sm mb-1.5 shadow-inner border border-white/10">
-              <Radio className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-            </div>
-            <div className="z-10 text-white font-bold text-sm sm:text-base max-w-[85%] truncate drop-shadow-sm">
-              {currentTrack.title}
-            </div>
-            <div className="z-10 text-white/80 text-xs sm:text-sm truncate max-w-[85%]">
-              {currentTrack.artist}
-            </div>
-          </div>
-        )}
+        <div className="relative w-full h-full">
+          <img
+            src={imageSrc}
+            alt={currentTrack.title}
+            onError={() => setImgError(true)}
+            className={`w-full h-full object-cover rounded-full transition-transform duration-700 ${
+              isPlaying ? 'scale-105' : 'scale-100 opacity-90'
+            }`}
+          />
+          {/* Subtle Vinyl Grooves Radial Overlay */}
+          <div className="absolute inset-0 rounded-full bg-[radial-gradient(circle_at_center,_transparent_35%,_rgba(0,0,0,0.5)_95%)] pointer-events-none" />
+        </div>
 
         {/* Center Vinyl Spindle Hole */}
         <div className="absolute w-8 h-8 sm:w-11 sm:h-11 rounded-full bg-slate-950 border border-slate-700/80 shadow-inner flex items-center justify-center z-25">
