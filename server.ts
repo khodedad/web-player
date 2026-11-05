@@ -105,7 +105,7 @@ async function startServer() {
       res.writeHead(proxyRes.statusCode || 200, {
         'Content-Type': proxyRes.headers['content-type'] || 'image/jpeg',
         'Access-Control-Allow-Origin': '*',
-        'Cache-Control': 'public, max-age=86400',
+        'Cache-Control': 'public, max-age=604800, immutable',
       });
       proxyRes.pipe(res);
     });
@@ -124,7 +124,10 @@ async function startServer() {
   });
 
   if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, 'dist')));
+    app.use(express.static(path.join(__dirname, 'dist'), {
+      maxAge: '365d',
+      immutable: true,
+    }));
     app.get('*', (_req, res) => {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'));
     });

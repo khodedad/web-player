@@ -22,10 +22,14 @@ const VISUALIZER_STYLES: { id: VisualizerStyle; name: string }[] = [
   { id: 'dual-spectrum', name: 'طیف دوطرفه اینتنس' },
   { id: 'cyber-equalizer', name: 'اکولایزر سایبرپانک' },
   { id: 'solar-flare', name: 'شعله خورشیدی (Solar Flare)' },
-  { id: 'matrix-rain', name: 'باران دیجیتال ماتریس' },
   { id: 'plasma-pulse', name: 'پالس پلاسما (Plasma Pulse)' },
   { id: 'supernova-ring', name: 'حلقه ابرنواختر (Supernova)' },
   { id: 'aurora-waves', name: 'امواج شفق قطبی (Aurora)' },
+  { id: 'cyber-vortex', name: 'گرداب انرژی سایبر (Cyber Vortex)' },
+  { id: 'hyper-cube', name: 'مکعب کوانتومی ۳ بعدی (Hyper Cube)' },
+  { id: 'laser-grid', name: 'شبکه لیزری رترو (Laser Grid)' },
+  { id: 'nebula-pulsar', name: 'پالسار سحابی (Nebula Pulsar)' },
+  { id: 'fire-ring', name: 'حلقه آتشین ارگانیک (Fire Ring)' },
 ];
 
 export default function App() {

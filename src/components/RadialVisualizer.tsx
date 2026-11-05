@@ -304,62 +304,6 @@ export const RadialVisualizer: React.FC<RadialVisualizerProps> = ({
       }
 
       // -----------------------------------------------------------------------
-      // NEW STYLE 8: Matrix Rain (باران دیجیتال ماتریس)
-      // -----------------------------------------------------------------------
-      else if (style === 'matrix-rain') {
-        const cols = 20;
-        ctx.save();
-        ctx.fillStyle = '#10b981';
-        ctx.font = 'bold 14px monospace';
-        for (let c = 0; c < cols; c++) {
-          const x = (c / cols) * screenW;
-          const y = ((phaseRef.current * 80 + c * 43) % screenH);
-          const char = String.fromCharCode(0x30A0 + Math.floor(Math.random() * 30));
-          ctx.globalAlpha = 0.6 + Math.sin(c + phaseRef.current) * 0.4;
-          ctx.fillText(char, x, y);
-        }
-        ctx.restore();
-      }
-
-      // -----------------------------------------------------------------------
-      // NEW STYLE 9: Plasma Pulse (پالس پلاسما)
-      // -----------------------------------------------------------------------
-      else if (style === 'plasma-pulse') {
-        ctx.save();
-        const circles = 4;
-        for (let c = 1; c <= circles; c++) {
-          const r = baseRadius + c * 22 * (1 + bass * 0.3);
-          ctx.strokeStyle = c % 2 === 0 ? accentColors[0] : accentColors[1];
-          ctx.lineWidth = 2;
-          ctx.globalAlpha = 0.7 - c * 0.12;
-          ctx.beginPath();
-          ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-        ctx.restore();
-      }
-
-      // -----------------------------------------------------------------------
-      // NEW STYLE 10: Supernova Ring (حلقه ابرنواختر)
-      // -----------------------------------------------------------------------
-      else if (style === 'supernova-ring') {
-        const dots = 60;
-        ctx.save();
-        for (let i = 0; i < dots; i++) {
-          const angle = (i / dots) * Math.PI * 2 - phaseRef.current * 0.5;
-          const freqVal = freqData[i % freqData.length] || 0;
-          const dist = baseRadius + 10 + (freqVal / 255) * maxBarLength * 1.4;
-          const x = centerX + Math.cos(angle) * dist;
-          const y = centerY + Math.sin(angle) * dist;
-          ctx.fillStyle = i % 2 === 0 ? accentColors[0] : '#ffffff';
-          ctx.beginPath();
-          ctx.arc(x, y, 2 + (freqVal / 255) * 3, 0, Math.PI * 2);
-          ctx.fill();
-        }
-        ctx.restore();
-      }
-
-      // -----------------------------------------------------------------------
       // NEW STYLE 11: Aurora Waves (امواج شفق قطبی)
       // -----------------------------------------------------------------------
       else if (style === 'aurora-waves') {
@@ -376,6 +320,166 @@ export const RadialVisualizer: React.FC<RadialVisualizerProps> = ({
           }
           ctx.stroke();
         }
+        ctx.restore();
+      }
+
+      // -----------------------------------------------------------------------
+      // NEW STYLE 12: Cyber Vortex (گرداب انرژی سایبر)
+      // -----------------------------------------------------------------------
+      else if (style === 'cyber-vortex') {
+        const spirals = 36;
+        ctx.save();
+        ctx.lineWidth = 2.2;
+        for (let i = 0; i < spirals; i++) {
+          const freqVal = freqData[Math.floor((i / spirals) * (freqData.length * 0.7))] || 0;
+          const angle = (i / spirals) * Math.PI * 2 + phaseRef.current * 1.5;
+          const spiralR = baseRadius + 8 + (freqVal / 255) * maxBarLength * 1.3 * (1 + bass * 0.4);
+          ctx.strokeStyle = i % 2 === 0 ? accentColors[0] : accentColors[1];
+          ctx.beginPath();
+          ctx.moveTo(centerX + Math.cos(angle) * baseRadius, centerY + Math.sin(angle) * baseRadius);
+          const controlAngle = angle + 0.35 * (1 + bass * 0.5);
+          ctx.quadraticCurveTo(
+            centerX + Math.cos(controlAngle) * (baseRadius + spiralR * 0.6),
+            centerY + Math.sin(controlAngle) * (baseRadius + spiralR * 0.6),
+            centerX + Math.cos(angle + 0.7) * spiralR,
+            centerY + Math.sin(angle + 0.7) * spiralR
+          );
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // -----------------------------------------------------------------------
+      // NEW STYLE 13: Hyper Cube 3D (مکعب کوانتومی ۳ بعدی)
+      // -----------------------------------------------------------------------
+      else if (style === 'hyper-cube') {
+        const cubeSize = (baseRadius * 0.85) * (1 + bass * 0.35);
+        const rotX = phaseRef.current * 0.8;
+        const rotY = phaseRef.current * 1.2;
+
+        const vertices = [
+          [-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1],
+          [-1, -1, 1],  [1, -1, 1],  [1, 1, 1],  [-1, 1, 1]
+        ];
+
+        const projected = vertices.map(([vx, vy, vz]) => {
+          let x = vx * cubeSize;
+          let y = vy * cubeSize;
+          let z = vz * cubeSize;
+
+          let y1 = y * Math.cos(rotX) - z * Math.sin(rotX);
+          let z1 = y * Math.sin(rotX) + z * Math.cos(rotX);
+
+          let x2 = x * Math.cos(rotY) + z1 * Math.sin(rotY);
+          let z2 = -x * Math.sin(rotY) + z1 * Math.cos(rotY);
+
+          const scale = 250 / (250 + z2);
+          return [centerX + x2 * scale, centerY + y1 * scale];
+        });
+
+        const edges = [
+          [0,1], [1,2], [2,3], [3,0],
+          [4,5], [5,6], [6,7], [7,4],
+          [0,4], [1,5], [2,6], [3,7]
+        ];
+
+        ctx.save();
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = accentColors[0];
+        ctx.shadowColor = accentColors[0];
+        ctx.shadowBlur = 12;
+
+        ctx.beginPath();
+        edges.forEach(([p1, p2]) => {
+          ctx.moveTo(projected[p1][0], projected[p1][1]);
+          ctx.lineTo(projected[p2][0], projected[p2][1]);
+        });
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // -----------------------------------------------------------------------
+      // NEW STYLE 14: Laser Grid 3D Horizon (شبکه لیزری رترو)
+      // -----------------------------------------------------------------------
+      else if (style === 'laser-grid') {
+        const gridY = screenH * 0.72;
+        ctx.save();
+        ctx.strokeStyle = accentColors[1];
+        ctx.globalAlpha = 0.45;
+        ctx.lineWidth = 1.5;
+
+        for (let x = -screenW; x < screenW * 2; x += 60) {
+          ctx.beginPath();
+          ctx.moveTo(centerX, gridY - 40);
+          ctx.lineTo(x, screenH);
+          ctx.stroke();
+        }
+
+        for (let y = gridY; y < screenH; y += 18) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(screenW, y);
+          ctx.stroke();
+        }
+
+        const towers = 32;
+        const towerW = screenW / towers;
+        ctx.globalAlpha = 0.85;
+        ctx.fillStyle = accentColors[0];
+
+        for (let i = 0; i < towers; i++) {
+          const freqVal = freqData[Math.floor((i / towers) * (freqData.length * 0.7))] || 0;
+          const towerH = (freqVal / 255) * (maxBarLength * 1.6) * (1 + bass * 0.4);
+          ctx.fillRect(i * towerW + 2, gridY - towerH, towerW - 4, towerH);
+        }
+        ctx.restore();
+      }
+
+      // -----------------------------------------------------------------------
+      // NEW STYLE 15: Nebula Pulsar (پالسار سحابی)
+      // -----------------------------------------------------------------------
+      else if (style === 'nebula-pulsar') {
+        const rings = 6;
+        ctx.save();
+        for (let r = 1; r <= rings; r++) {
+          const freqVal = freqData[r * 6] || 0;
+          const radius = baseRadius + r * 18 + (freqVal / 255) * 25 * (1 + bass * 0.4);
+          ctx.strokeStyle = r % 2 === 0 ? accentColors[0] : accentColors[1];
+          ctx.lineWidth = Math.max(1, 4 - r * 0.5);
+          ctx.globalAlpha = 0.9 - r * 0.13;
+          ctx.setLineDash([8 + r * 2, 6 + r * 3]);
+          ctx.beginPath();
+          ctx.arc(centerX, centerY, radius, phaseRef.current * r * 0.3, phaseRef.current * r * 0.3 + Math.PI * 2);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // -----------------------------------------------------------------------
+      // NEW STYLE 16: Fire Ring (حلقه آتشین ارگانیک)
+      // -----------------------------------------------------------------------
+      else if (style === 'fire-ring') {
+        const flames = 48;
+        const stepAngle = (Math.PI * 2) / flames;
+        ctx.save();
+        ctx.lineWidth = barWidth * 1.1;
+        ctx.lineCap = 'round';
+        const fireGrad = ctx.createRadialGradient(centerX, centerY, baseRadius, centerX, centerY, baseRadius + maxBarLength * 1.3);
+        fireGrad.addColorStop(0, '#f59e0b');
+        fireGrad.addColorStop(0.5, '#ef4444');
+        fireGrad.addColorStop(1, accentColors[0]);
+        ctx.strokeStyle = fireGrad;
+
+        ctx.beginPath();
+        for (let i = 0; i < flames; i++) {
+          const freqVal = freqData[Math.floor((i / flames) * (freqData.length * 0.7))] || 0;
+          const noise = Math.sin(i * 0.6 + phaseRef.current * 6) * 12;
+          const flameH = Math.max(8, (freqVal / 255) * maxBarLength * 1.2 * (1 + bass * 0.5) + noise);
+          const angle = i * stepAngle;
+          ctx.moveTo(centerX + Math.cos(angle) * (baseRadius + 2), centerY + Math.sin(angle) * (baseRadius + 2));
+          ctx.lineTo(centerX + Math.cos(angle) * (baseRadius + 2 + flameH), centerY + Math.sin(angle) * (baseRadius + 2 + flameH));
+        }
+        ctx.stroke();
         ctx.restore();
       }
 

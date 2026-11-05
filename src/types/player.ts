@@ -20,10 +20,14 @@ export type VisualizerStyle =
   | 'dual-spectrum'
   | 'cyber-equalizer'
   | 'solar-flare'
-  | 'matrix-rain'
   | 'plasma-pulse'
   | 'supernova-ring'
-  | 'aurora-waves';
+  | 'aurora-waves'
+  | 'cyber-vortex'
+  | 'hyper-cube'
+  | 'laser-grid'
+  | 'nebula-pulsar'
+  | 'fire-ring';
 
 export interface AudioState {
   isPlaying: boolean;
