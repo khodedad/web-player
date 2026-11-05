@@ -48,7 +48,7 @@ export const CoverCircle = forwardRef<HTMLDivElement, CoverCircleProps>(({
         {hasCover ? (
           <div className="relative w-full h-full">
             <img
-              src={`/api/image-proxy?url=${encodeURIComponent(currentTrack.coverUrl!)}`}
+              src={currentTrack.coverUrl!}
               alt={currentTrack.title}
               onError={() => setImgError(true)}
               className={`w-full h-full object-cover rounded-full transition-transform duration-700 ${
